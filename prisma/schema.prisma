@@ -1,0 +1,34 @@
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DB_URL")
+}
+
+model users {
+    id   String @id @default(uuid())
+    name String
+
+    createdBy dataModel[] @relation("createdBy")
+    updatedBy dataModel[] @relation("updatedBy")
+}
+
+model dataModel {
+    id                String    @id @default(uuid())
+    name              String    @unique
+    description       String?
+    app_package       String?
+    primary_key_field String?
+    query             String
+    is_deleted        Boolean   @default(false)
+    created_at        DateTime  @default(now())
+    created_by_id     String?
+    createdBy         users?    @relation("createdBy", fields: [created_by_id], references: [id], onDelete: SetNull)
+    updated_at        DateTime? @updatedAt
+    updated_by_id     String?   @default(dbgenerated("NULL"))
+    updatedBy         users?    @relation("updatedBy", fields: [updated_by_id], references: [id], onDelete: SetNull)
+
+    @@map("data_model")
+}
