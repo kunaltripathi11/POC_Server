@@ -111,7 +111,7 @@ exports.updateDashboard = async (req, res) => {
 }
 
 exports.getDashboard = async (req, res) => {
-    const getDashboard = "SELECT d.title, a.title as Application  ,d.url,d.updated_at from dashboard d join application a on d.app_id=a.id WHERE d.is_deleted=FALSE"
+    const getDashboard = "SELECT d.*, a.title as Application   from dashboard d join application a on d.app_id=a.id WHERE d.is_deleted=FALSE"
 
     try {
         const result = await pool.query(getDashboard)

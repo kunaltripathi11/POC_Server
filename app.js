@@ -10,10 +10,20 @@ const solutionCategoryRoute = require('./Routes/solutionCategory')
 const categoryRoute = require('./Routes/categoryRoute')
 const dashboardRoute = require('./Routes/dashboardRoutes')
 const widgetRoute = require('./Routes/widgetRoute')
+const cors = require('cors')
+
+
 
 
 app.use(express.json({ limit: "10kb" }));
 app.use(express.urlencoded({ extended: true }));
+
+app.use(cors({
+    origin: "http://localhost:5173",
+    methods: 'GET, POST, PUT, DELETE',
+    credentials: true
+
+}))
 
 app.use('/admin/data-model', dataModel)
 app.use('/admin/business-rules', buisnessRules)

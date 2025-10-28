@@ -1,5 +1,5 @@
 const app = require('./app')
-const cors = require('cors')
+
 
 
 
@@ -17,12 +17,7 @@ const cors = require('cors')
 //         }
 //     })
 // })
-app.use(cors({
-    origin: "http://localhost:5173/",
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    credentials: true
 
-}))
 
 const port = process.env.PORT || 3000
 const server = app.listen(port, () => {

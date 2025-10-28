@@ -32,7 +32,7 @@ exports.addApplication = async (req, res) => {
 }
 
 exports.getApplication = async (req, res) => {
-    const getAppQuery = "Select a.id,a.title , c.category_name ,a.display_order, a.app_package,a.icon, a.active, a.hide_app FROM application a LEFT JOIN category c ON a.category_id=c.id WHERE a.is_deleted=FALSE ORDER BY display_order,title"
+    const getAppQuery = "Select a.*, c.category_name FROM application a LEFT JOIN category c ON a.category_id=c.id WHERE a.is_deleted=FALSE ORDER BY display_order,title"
     try {
         const result = await pool.query(getAppQuery)
         res.status(200).json({

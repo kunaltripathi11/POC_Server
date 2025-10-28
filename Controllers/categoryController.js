@@ -52,7 +52,7 @@ exports.updateCategory = async (req, res) => {
 }
 
 exports.getCategory = async (req, res) => {
-    const getCategory = "SELECT c.id, s.title as SolutionCategory  ,c.category_name,c.display_order from solution_category s right join category c on c.sol_category_id=s.id WHERE c.is_deleted=FALSE"
+    const getCategory = "SELECT c.*, s.title from solution_category s right join category c on c.sol_category_id=s.id WHERE c.is_deleted=FALSE"
 
     try {
         const result = await pool.query(getCategory)
