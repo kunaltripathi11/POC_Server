@@ -26,10 +26,14 @@ exports.addDataModel =
 
 exports.getDataModels =
     (async (req, res) => {
-        const getQuery = "SELECT name,description,primary_key_field, (Select name as createdBy from users where id=$1 ),created_at, (Select name as updatedBy from users where id=$2 ), updated_at FROM data_model WHERE is_deleted=FALSE"
+        const getQuery = "SELECT uuid,name,description,primary_key_field, (Select name as createdBy from users where id=$1 ),created_at, (Select name as updatedBy from users where id=$2 ), updated_at FROM data_model WHERE is_deleted=FALSE"
         try {
             const result = await pool.query(getQuery, [userID, userID])
-            res.status(200).json(result.rows)
+            res.status(200).json({
+                message: 'Success',
+                data: result.rows
+
+            })
         } catch (error) {
             console.log("Error Fetching: " + error);
             res.status(500).json({
@@ -46,7 +50,7 @@ exports.deleteDataModel = async (req, res) => {
     const { id } = req.params
     console.log(id);
     const updated_by_id = userID
-    deleteQuery = "UPDATE data_model SET is_deleted=TRUE, updated_at = NOW(), updated_by_id=$1 WHERE id = $2 returning *"
+    deleteQuery = "UPDATE data_model SET is_deleted=TRUE, updated_at = NOW(), updated_by_id=$1 WHERE uuid = $2 returning *"
     try {
 
         const result = await pool.query(deleteQuery, [updated_by_id, id])
