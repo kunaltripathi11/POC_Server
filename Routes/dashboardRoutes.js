@@ -1,19 +1,16 @@
-const express = require('express')
+const express = require("express");
 const router = express.Router();
 
-const dashboardController = require('../Controllers/dashboardController')
+const dashboardController = require("../Controllers/dashboardController");
+
+router.route("/").get(dashboardController.getDashboard);
 
 router
-    .route('/')
-    .get(dashboardController.getDashboard)
+  .route("/:id")
+  .put(dashboardController.updateDashboard)
+  .delete(dashboardController.deleteDashboard)
+  .get(dashboardController.getDashboardById);
 
-router
-    .route('/:id')
-    .put(dashboardController.updateDashboard)
-    .delete(dashboardController.deleteDashboard)
+router.route("/add").post(dashboardController.addDashboard);
 
-router
-    .route('/add')
-    .post(dashboardController.addDashboard)
-
-module.exports = router
+module.exports = router;
