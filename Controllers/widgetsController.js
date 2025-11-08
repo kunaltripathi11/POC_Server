@@ -56,16 +56,12 @@ exports.updateWidget = async (req, res) => {
 
 exports.getWidget = async (req, res) => {
 	const getDashboardId = await pool.query(
-		`SELECT id from dashboard where uuid=$1`,
+		`SELECT id from dashboard where ${req.query.variable}=$1 and is_deleted=false`,
 		[req.query.id]
 	);
 	const getWidgetData = await pool.query(
 		`SELECT d.query, w.*  FROM widget w join data_model d on d.id=w.data_model_id  where w.dashboard_id=${getDashboardId.rows[0].id} `
 	);
-
-	console.log("iDDD", getDashboardId.rows[0].id);
-
-	console.log("Data", getWidgetData.rows);
 
 	const finalResult = [];
 	for (let i = 0; i < getWidgetData.rows.length; i++) {
