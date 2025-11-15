@@ -16,7 +16,7 @@ exports.addBuisnessRules = async (req, res) => {
 	} = req.body;
 
 	if (link_to == null) {
-		destination_id == null;
+		destination_id = null;
 	} else {
 		if (destination_id == null) {
 			console.error("Destination ID cannot be null");
