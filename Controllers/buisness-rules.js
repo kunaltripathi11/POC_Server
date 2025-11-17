@@ -2,7 +2,7 @@ const pool = require("../db");
 
 let userID = "c0f715b5-9800-41a5-80df-69e73767765b";
 exports.addBuisnessRules = async (req, res) => {
-	const {
+	let {
 		name,
 		description,
 		reserved_rules,
@@ -24,9 +24,10 @@ exports.addBuisnessRules = async (req, res) => {
 		}
 	}
 	const addQuery =
-		"INSERT INTO business_rules (name,description,reserved_rules,data_model_id,app_package,workflow,user_specific_field_id,multiple_user_specific_field_id,link_to,destination_id, created_by_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)";
+		"INSERT INTO business_rules (name,description,reserved_rules,data_model_id,app_package,workflow,user_specific_field_id,multiple_user_specific_field_id,link_to,destination_id, created_by_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) returning *";
 
 	const created_by_id = userID;
+	console.log("BODYTYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY", req.body);
 	try {
 		const result = await pool.query(addQuery, [
 			name,

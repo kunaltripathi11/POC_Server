@@ -59,16 +59,28 @@ exports.getWidget = async (req, res) => {
 		`SELECT id from dashboard where ${req.query.variable}=$1 and is_deleted=false`,
 		[req.query.id]
 	);
+
+	const getWidget = await pool.query(
+		`SELECT business_rule_id from widget where dashboard_id=${getDashboardId.rows[0].id} `
+	);
 	const getWidgetData = await pool.query(
 		`SELECT d.query, w.*  FROM widget w join data_model d on d.id=w.data_model_id  where w.dashboard_id=${getDashboardId.rows[0].id} `
 	);
-
+	console.log(getWidget.rows);
 	const finalResult = [];
-	for (let i = 0; i < getWidgetData.rows.length; i++) {
-		const query = getWidgetData.rows[i].query;
+	for (let i = 0; i < getWidget.rows.length; i++) {
+		const query = getWidgetData?.rows[i]?.query || null;
+		const widget = {};
+
 		try {
-			const result = await pool.query(query);
-			finalResult.push(result.rows[0]);
+			if (query) {
+				const result = await pool.query(query);
+				widget.query = result.rows[0];
+			} else {
+				widget.query = null;
+			}
+			widget.rule_id = getWidget.rows[i].business_rule_id;
+			finalResult.push(widget);
 			// res.status(200).json({
 			// 	data: result.rows,
 			// });
@@ -77,7 +89,7 @@ exports.getWidget = async (req, res) => {
 			res.status(500).json("ERROR FETCHING");
 		}
 	}
-
+	console.log("Final Resulr", finalResult);
 	res.status(200).json({
 		data: finalResult,
 	});

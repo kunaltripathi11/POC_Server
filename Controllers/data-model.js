@@ -37,7 +37,7 @@ exports.addDataModel = async (req, res) => {
 
 exports.getDataModels = async (req, res) => {
 	const getQuery =
-		"SELECT uuid,name,description,primary_key_field, (Select name as createdBy from users where id=$1 ),created_at, (Select name as updatedBy from users where id=$2 ), updated_at FROM data_model WHERE is_deleted=FALSE";
+		"SELECT uuid,id,name,description,primary_key_field, (Select name as createdBy from users where id=$1 ),created_at, (Select name as updatedBy from users where id=$2 ), updated_at FROM data_model WHERE is_deleted=FALSE";
 	try {
 		const result = await pool.query(getQuery, [userID, userID]);
 		res.status(200).json({
