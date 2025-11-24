@@ -2,20 +2,28 @@ const pool = require("../db");
 let userID = "c0f715b5-9800-41a5-80df-69e73767765b";
 
 exports.addWidget = async (req, res) => {
-	const { dashboard_id } = req.body;
+	const { dashboard_id, widget_type } = req.body;
 
 	const addWidgetQuery =
-		"INSERT INTO widget (dashboard_id,created_by_id,updated_by_id) VALUES ($1,$2,$3) RETURNING *";
+		"INSERT INTO widget (dashboard_id,widget_type,created_by_id,updated_by_id) VALUES ($1,$2,$3,$4) RETURNING *";
 	const created_by_id = userID;
 	const updated_by_id = userID;
+
+	console.log(widget_type);
 
 	try {
 		const result = await pool.query(addWidgetQuery, [
 			dashboard_id,
+			widget_type,
 			created_by_id,
 			updated_by_id,
 		]);
-		res.status(200).json("Widget Inserted sucessfully", result.rows);
+
+		console.log("Resultds dssssssssssssssssssss", result);
+		res.status(200).json({
+			Message: "Widget Inserted sucessfully",
+			data: result.rows[0],
+		});
 	} catch (error) {
 		console.log("ERROR ", error);
 		res.status(500).json("ERROR INSERTING");
@@ -62,19 +70,26 @@ exports.getWidget = async (req, res) => {
 	const getWidget = await pool.query(
 		`SELECT * from widget where dashboard_id=${getDashboardId.rows[0].id} `
 	);
+
 	const getWidgetData = await pool.query(
 		`SELECT d.query, w.*  FROM widget w join data_model d on d.id=w.data_model_id  where w.dashboard_id=${getDashboardId.rows[0].id} `
 	);
+
+	console.log("Widget	 Data", getWidget);
 	const dash_id = getDashboardId.rows[0].id;
 	const finalResult = [];
+
 	for (let i = 0; i < getWidget.rows.length; i++) {
 		const query = getWidgetData?.rows[i]?.query || null;
 		const widget = {};
-
 		try {
 			if (query) {
 				const result = await pool.query(query);
-				widget.query = result.rows[0];
+
+				widget.query = result.rows;
+
+				widget.query = result.rows;
+				widget.columns = result.fields.map((f) => f.name);
 			} else {
 				widget.query = null;
 			}
@@ -82,6 +97,7 @@ exports.getWidget = async (req, res) => {
 			widget.uuid = getWidget.rows[i].uuid;
 
 			widget.rule_id = getWidget.rows[i].business_rule_id;
+
 			finalResult.push(widget);
 			// res.status(200).json({
 			// 	data: result.rows,
@@ -91,7 +107,7 @@ exports.getWidget = async (req, res) => {
 			res.status(500).json("ERROR FETCHING");
 		}
 	}
-
+	// console.log("FINAL RESULT", finalResult);
 	res.status(200).json({
 		data: finalResult,
 		dashboard_id: dash_id,

@@ -59,7 +59,10 @@ exports.addDashboard = async (req, res) => {
 			created_by_id,
 			updated_by_id,
 		]);
-		res.status(200).json("Dashboard Inserted sucessfully");
+		res.status(200).json({
+			Message: "Dashboard Inserted sucessfully",
+			data: result.rows[0],
+		});
 	} catch (error) {
 		console.log("ERROR ", error);
 

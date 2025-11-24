@@ -4,7 +4,7 @@ let userID = "c0f715b5-9800-41a5-80df-69e73767765b";
 exports.addSolCategory = async (req, res) => {
 	const { title } = req.body;
 	const addSolCatQuery =
-		"INSERT INTO solution_category (title,created_by_id,updated_by_id) VALUES ($1,$2,$3)";
+		"INSERT INTO solution_category (title,created_by_id,updated_by_id) VALUES ($1,$2,$3) RETURNING *";
 	const created_by_id = userID;
 	const updated_by_id = userID;
 	try {
@@ -13,7 +13,11 @@ exports.addSolCategory = async (req, res) => {
 			created_by_id,
 			updated_by_id,
 		]);
-		res.status(200).json("Solution Category Inserted sucessfully");
+
+		res.status(200).json({
+			Message: "Solution Category Inserted sucessfully",
+			data: result.rows[0],
+		});
 	} catch (error) {
 		console.log("ERROR ", error);
 		res.status(500).json("ERROR INSERTING");

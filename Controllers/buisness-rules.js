@@ -27,7 +27,6 @@ exports.addBuisnessRules = async (req, res) => {
 		"INSERT INTO business_rules (name,description,reserved_rules,data_model_id,app_package,workflow,user_specific_field_id,multiple_user_specific_field_id,link_to,destination_id, created_by_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) returning *";
 
 	const created_by_id = userID;
-	console.log("BODYTYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY", req.body);
 	try {
 		const result = await pool.query(addQuery, [
 			name,
@@ -44,8 +43,8 @@ exports.addBuisnessRules = async (req, res) => {
 		]);
 
 		res.status(200).json({
-			rule: result.rows[0],
-			data: "Buisness rule sucessfully created",
+			data: result.rows[0],
+			Message: "Buisness rule sucessfully created",
 		});
 	} catch (error) {
 		console.log(error);
@@ -88,11 +87,16 @@ exports.deleteBusinessRules = async (req, res) => {
 };
 exports.getDeletedBusinessRules = async (req, res) => {
 	const getRulesQuery =
-		"SELECT name AS NAME, description AS DESCRIPTION FROM business_rules WHERE is_deleted=TRUE";
+		"select  br.uuid,br.name, br.description, STRING_AGG(t.tag, ', ') as tags from business_rules br left join tag_rules tr on tr.rule_id = br.id left join tags t on t.id = tr.tag_id where br.is_deleted=true group by br.id, br.name  ";
+
 	try {
 		const result = await pool.query(getRulesQuery);
 
-		res.status(200).json(result.rows);
+		res.status(200).json({
+			message: "success",
+
+			data: result.rows,
+		});
 	} catch (error) {
 		console.error("ERROR IN FETCHING", error);
 		res.status(500).json("ERROR IN FETCHING");
@@ -101,16 +105,20 @@ exports.getDeletedBusinessRules = async (req, res) => {
 
 exports.getBusinessRulesById = async (req, res) => {
 	const getQueryFromDataModel =
-		"select d1.query from data_model d1 right join business_rules b1 on (d1.id=b1.data_model_id);";
+		"select d1.query from data_model d1 right join business_rules b1 on (d1.id=b1.data_model_id) where b1.uuid=$1;";
 	try {
-		const queryModel = await pool.query(getQueryFromDataModel);
-		// console.log(queryModel);
+		const queryModel = await pool.query(getQueryFromDataModel, [
+			req.params.id,
+		]);
+
 		const dataQuery = queryModel.rows[0].query;
 
 		const result = await pool.query(dataQuery);
+		const column_name = result.fields.map((f) => f.name);
 
 		res.status(201).json({
 			data: result.rows,
+			columns: column_name,
 			Message: "Data fetched sucessfully",
 		});
 	} catch (error) {

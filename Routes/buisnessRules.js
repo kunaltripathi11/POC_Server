@@ -1,29 +1,18 @@
 const express = require("express");
 
 const router = express.Router();
-const buisnessRules = require('../Controllers/buisness-rules')
+const buisnessRules = require("../Controllers/buisness-rules");
 
+router.route("/add-business-rules").post(buisnessRules.addBuisnessRules);
 
-router
-    .route('/add-business-rules')
-    .post(buisnessRules.addBuisnessRules)
+router.route("/").get(buisnessRules.getBusinessRules);
 
-router
-    .route('/')
-    .get(buisnessRules.getBusinessRules)
+router.route("/archive").get(buisnessRules.getDeletedBusinessRules);
 
 router
-    .route('/archive')
-    .get(buisnessRules.getDeletedBusinessRules)
+	.route("/:id")
+	.put(buisnessRules.updateBusinessRule)
+	.delete(buisnessRules.deleteBusinessRules)
+	.get(buisnessRules.getBusinessRulesById);
 
-router
-    .route('/oneRule')
-    .get(buisnessRules.getBusinessRulesById)
-
-router
-    .route('/:id')
-    .put(buisnessRules.updateBusinessRule)
-    .delete(buisnessRules.deleteBusinessRules)
-
-module.exports = router
-
+module.exports = router;

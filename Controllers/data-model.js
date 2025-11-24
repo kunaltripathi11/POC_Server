@@ -4,7 +4,7 @@ let userID = "c0f715b5-9800-41a5-80df-69e73767765b";
 // add data model
 exports.addDataModel = async (req, res) => {
 	const insertQuery =
-		"INSERT INTO data_model (name,description,app_package,primary_key_field,query, created_by_id, updated_by_id) VALUES ($1,$2,$3,$4,$5,$6,$7)";
+		"INSERT INTO data_model (name,description,app_package,primary_key_field,query, created_by_id, updated_by_id) VALUES ($1,$2,$3,$4,$5,$6,$7) returning *";
 	const {
 		name,
 		description,
@@ -24,8 +24,11 @@ exports.addDataModel = async (req, res) => {
 			created_by_id,
 			updated_by_id || null,
 		]);
-
-		res.status(201).json(result.rows[0]);
+		console.log(result);
+		res.status(201).json({
+			success: "success",
+			data: result.rows[0],
+		});
 	} catch (error) {
 		console.error("Error :" + error);
 		res.status(501);
