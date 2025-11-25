@@ -9,8 +9,6 @@ exports.addWidget = async (req, res) => {
 	const created_by_id = userID;
 	const updated_by_id = userID;
 
-	console.log(widget_type);
-
 	try {
 		const result = await pool.query(addWidgetQuery, [
 			dashboard_id,
@@ -19,7 +17,6 @@ exports.addWidget = async (req, res) => {
 			updated_by_id,
 		]);
 
-		console.log("Resultds dssssssssssssssssssss", result);
 		res.status(200).json({
 			Message: "Widget Inserted sucessfully",
 			data: result.rows[0],
@@ -68,19 +65,19 @@ exports.getWidget = async (req, res) => {
 	);
 
 	const getWidget = await pool.query(
-		`SELECT * from widget where dashboard_id=${getDashboardId.rows[0].id} `
+		`SELECT * from widget where dashboard_id=${getDashboardId.rows[0].id} order by business_rule_id `
 	);
 
 	const getWidgetData = await pool.query(
-		`SELECT d.query, w.*  FROM widget w join data_model d on d.id=w.data_model_id  where w.dashboard_id=${getDashboardId.rows[0].id} `
+		`SELECT d.query, w.*  FROM widget w left join data_model d on d.id=w.data_model_id  where w.dashboard_id=${getDashboardId.rows[0].id} order by w.business_rule_id`
 	);
 
-	console.log("Widget	 Data", getWidget);
 	const dash_id = getDashboardId.rows[0].id;
 	const finalResult = [];
 
 	for (let i = 0; i < getWidget.rows.length; i++) {
 		const query = getWidgetData?.rows[i]?.query || null;
+
 		const widget = {};
 		try {
 			if (query) {
@@ -94,9 +91,11 @@ exports.getWidget = async (req, res) => {
 				widget.query = null;
 			}
 			// widget.dash_id = getDashboardId.rows[0]?.id;
+
 			widget.uuid = getWidget.rows[i].uuid;
 
 			widget.rule_id = getWidget.rows[i].business_rule_id;
+			widget.name = getWidget.rows[i].name;
 
 			finalResult.push(widget);
 			// res.status(200).json({
@@ -107,7 +106,6 @@ exports.getWidget = async (req, res) => {
 			res.status(500).json("ERROR FETCHING");
 		}
 	}
-	// console.log("FINAL RESULT", finalResult);
 	res.status(200).json({
 		data: finalResult,
 		dashboard_id: dash_id,
