@@ -54,7 +54,7 @@ exports.addBuisnessRules = async (req, res) => {
 
 exports.getBusinessRules = async (req, res) => {
 	const getRulesQuery =
-		"select  br.uuid,br.name, br.description, STRING_AGG(t.tag, ', ') as tags from business_rules br left join tag_rules tr on tr.rule_id = br.id left join tags t on t.id = tr.tag_id where br.is_deleted=False group by br.id, br.name  ";
+		"select br.*, STRING_AGG(t.tag, ', ') as tags from business_rules br left join tag_rules tr on tr.rule_id = br.id left join tags t on t.id = tr.tag_id where br.is_deleted=False group by br.id, br.name  ";
 
 	try {
 		const result = await pool.query(getRulesQuery);
@@ -69,22 +69,38 @@ exports.getBusinessRules = async (req, res) => {
 	}
 };
 
-exports.deleteBusinessRules = async (req, res) => {
-	const deleteRuleQuery =
+exports.archiveBusinessRules = async (req, res) => {
+	const archiveRuleQuery =
 		"Update business_rules SET is_deleted=TRUE, updated_at=NOW(), updated_by_id=$1  WHERE uuid=$2";
 	let updated_by_id = userID;
 
 	try {
-		const result = await pool.query(deleteRuleQuery, [
+		const result = await pool.query(archiveRuleQuery, [
 			updated_by_id,
 			req.params.id,
 		]);
-		res.status(200).json("Business Rule deleted");
+		res.status(200).json("Business Rule Archived");
 	} catch (error) {
 		console.log(error);
 		res.status(500).json("Error deleting user");
 	}
 };
+
+exports.deleteBusinessRule = async (req, res) => {
+	const deleteRuleQuery =
+		"delete from business_rules where uuid=$1 returning *";
+	try {
+		const result = await pool.query(deleteRuleQuery, [req.params.id]);
+		res.status(200).json({
+			success: true,
+			data: result.rows[0],
+		});
+	} catch (error) {
+		console.log(error);
+		res.status(500).json("Error deleting user");
+	}
+};
+
 exports.getDeletedBusinessRules = async (req, res) => {
 	const getRulesQuery =
 		"select  br.uuid,br.name, br.description, STRING_AGG(t.tag, ', ') as tags from business_rules br left join tag_rules tr on tr.rule_id = br.id left join tags t on t.id = tr.tag_id where br.is_deleted=true group by br.id, br.name  ";
@@ -151,7 +167,7 @@ exports.updateBusinessRule = async (req, res) => {
 
 	const { id } = req.params;
 	const updateRuleQuery =
-		"UPDATE business_rules SET name = $1,description = $2,reserved_rules = $3,data_model_id=$4,app_package=$5,workflow=$6,user_specific_field_id=$7,multiple_user_specific_field_id=$8,link_to=$9,destination_id=$10, updated_at=NOW(), updated_by_id=$11 WHERE uuid=$12";
+		"UPDATE business_rules SET name = $1,description = $2,reserved_rules = $3,data_model_id=$4,app_package=$5,workflow=$6,user_specific_field_id=$7,multiple_user_specific_field_id=$8,link_to=$9,destination_id=$10, updated_at=NOW(), updated_by_id=$11 WHERE uuid=$12 returning *";
 
 	const updated_by_id = userID;
 	try {
@@ -171,11 +187,28 @@ exports.updateBusinessRule = async (req, res) => {
 		]);
 
 		res.status(200).json({
-			data1: result.rows[0],
-			data: "Buisness rule sucessfully updated",
+			data: result.rows[0],
+			Message: "Buisness rule sucessfully updated",
 		});
 	} catch (error) {
 		console.log(error);
 		res.status(501).json("ERROR in ENTERING BUSINESS RULES");
+	}
+};
+exports.activateRule = async (req, res) => {
+	const updateRuleQuery =
+		"UPDATE business_rules SET is_deleted=false WHERE uuid=$1 returning *";
+
+	try {
+		const result = await pool.query(updateRuleQuery, [req.params.id]);
+
+		res.status(200).json({
+			success: true,
+			data: result.rows[0],
+			Message: "Buisness rule activated ",
+		});
+	} catch (error) {
+		console.log(error);
+		res.status(501).json("ERROR in activating BUSINESS RULES");
 	}
 };

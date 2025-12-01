@@ -12,4 +12,6 @@ router
 
 router.route("/add").post(widgetController.addWidget);
 
+router.route("/getModel").post(widgetController.getModelByRule);
+
 module.exports = router;

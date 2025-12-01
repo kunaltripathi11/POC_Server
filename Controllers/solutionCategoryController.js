@@ -49,7 +49,7 @@ exports.updateSolCategory = async (req, res) => {
 
 exports.getSolCategory = async (req, res) => {
 	const getSolCategory =
-		"SELECT id,UUID, title from solution_category WHERE is_deleted=FALSE";
+		"SELECT id,UUID, title from solution_category WHERE is_deleted=FALSE order by id";
 
 	try {
 		const result = await pool.query(getSolCategory);

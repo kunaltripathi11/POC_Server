@@ -39,14 +39,14 @@ exports.addDataModel = async (req, res) => {
 //Get data model
 
 exports.getDataModels = async (req, res) => {
-	const getQuery =
-		"SELECT uuid,id,name,description,primary_key_field, (Select name as createdBy from users where id=$1 ),created_at, (Select name as updatedBy from users where id=$2 ), updated_at FROM data_model WHERE is_deleted=FALSE";
+	const getQuery = "SELECT * FROM data_model WHERE is_deleted=FALSE";
 	try {
-		const result = await pool.query(getQuery, [userID, userID]);
+		const result = await pool.query(getQuery);
 		res.status(200).json({
 			message: "Success",
 			data: result.rows,
 		});
+		console.log(result.rows);
 	} catch (error) {
 		console.log("Error Fetching: " + error);
 		res.status(500).json({
@@ -80,7 +80,7 @@ exports.updateDataModel = async (req, res) => {
 	const updated_by_id = userID;
 
 	const updateQuery =
-		"UPDATE data_model SET name=$1, description=$2, app_package=$3,primary_key_field=$4,query=$5,  updated_by_id=$6, updated_at=NOW() WHERE id=$7 ";
+		"UPDATE data_model SET name=$1, description=$2, app_package=$3,primary_key_field=$4,query=$5,  updated_by_id=$6, updated_at= NOW() WHERE uuid=$7 ";
 	const { name, description, app_package, primary_key_field, query } =
 		req.body;
 	try {
@@ -94,7 +94,11 @@ exports.updateDataModel = async (req, res) => {
 			id,
 		]);
 		console.log("Update Successful");
-		res.status(200).json("Update Successful", results.rows[0]);
+		res.status(200).json({
+			Message: "Update Successful",
+			data: results.rows[0],
+			success: true,
+		});
 	} catch (error) {
 		console.error(error);
 		res.status(500).json("Error In updating user");

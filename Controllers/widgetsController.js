@@ -26,14 +26,25 @@ exports.addWidget = async (req, res) => {
 		res.status(500).json("ERROR INSERTING");
 	}
 };
-
-exports.updateWidget = async (req, res) => {
-	const { name, dashboard_id, business_rule_id } = req.body;
+exports.getModelByRule = async (req, res) => {
+	const { business_rule_id } = req.body;
 
 	const getDataModelId =
-		"SELECT data_model_id FROM  business_rules  WHERE id=$1";
-	const ModelId = await pool.query(getDataModelId, [business_rule_id]);
-	const data_model_id = ModelId.rows[0].data_model_id;
+		"SELECT b.uuid as rule_uuid,d.uuid as model_uuid,d.name,b.data_model_id FROM  business_rules b join data_model d on d.id=b.data_model_id WHERE b.id=$1";
+	try {
+		const response = await pool.query(getDataModelId, [business_rule_id]);
+
+		res.status(200).json({
+			data: response.rows[0],
+			success: "success",
+		});
+	} catch (error) {
+		console.log("ERROR", error);
+	}
+};
+
+exports.updateWidget = async (req, res) => {
+	const { name, dashboard_id, data_model_id, business_rule_id } = req.body;
 
 	const addCatQuery =
 		"UPDATE widget SET name=$1,dashboard_id=$2,business_rule_id=$3,data_model_id=$4,updated_by_id=$5, updated_at=NOW() WHERE uuid=$6 and is_deleted=false returning *";
@@ -69,7 +80,7 @@ exports.getWidget = async (req, res) => {
 	);
 
 	const getWidgetData = await pool.query(
-		`SELECT d.query, w.*  FROM widget w left join data_model d on d.id=w.data_model_id  where w.dashboard_id=${getDashboardId.rows[0].id} order by w.business_rule_id`
+		`SELECT d.query, w.*  FROM widget w left join data_model d on d.id=w.data_model_id join business_rules b on b.data_model_id=d.id where w.dashboard_id=${getDashboardId.rows[0].id} order by w.business_rule_id`
 	);
 
 	const dash_id = getDashboardId.rows[0].id;
@@ -77,15 +88,19 @@ exports.getWidget = async (req, res) => {
 
 	for (let i = 0; i < getWidget.rows.length; i++) {
 		const query = getWidgetData?.rows[i]?.query || null;
+		const data_model_id = getWidgetData?.rows[i]?.data_model_id || null;
 
 		const widget = {};
+
+		widget.dash_id = dash_id;
+		widget.data_model_id = data_model_id;
+
 		try {
 			if (query) {
 				const result = await pool.query(query);
 
 				widget.query = result.rows;
 
-				widget.query = result.rows;
 				widget.columns = result.fields.map((f) => f.name);
 			} else {
 				widget.query = null;
