@@ -121,14 +121,14 @@ exports.getDeletedBusinessRules = async (req, res) => {
 
 exports.getBusinessRulesById = async (req, res) => {
 	const getQueryFromDataModel =
-		"select d1.query from data_model d1 right join business_rules b1 on (d1.id=b1.data_model_id) where b1.uuid=$1;";
+		"select d1.query,b1.* from data_model d1 right join business_rules b1 on (d1.id=b1.data_model_id) where b1.uuid=$1;";
 	try {
 		const queryModel = await pool.query(getQueryFromDataModel, [
 			req.params.id,
 		]);
 
 		const dataQuery = queryModel.rows[0].query;
-
+		const name = queryModel.rows[0].name;
 		const result = await pool.query(dataQuery);
 		const column_name = result.fields.map((f) => f.name);
 
@@ -136,6 +136,7 @@ exports.getBusinessRulesById = async (req, res) => {
 			data: result.rows,
 			columns: column_name,
 			Message: "Data fetched sucessfully",
+			RuleName: name,
 		});
 	} catch (error) {
 		res.status(500).json("Error FETCHING");
