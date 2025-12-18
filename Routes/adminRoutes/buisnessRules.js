@@ -1,7 +1,7 @@
 const express = require("express");
 
 const router = express.Router();
-const buisnessRules = require("../Controllers/buisness-rules");
+const buisnessRules = require("../../Controllers/buisness-rules");
 
 router.route("/add-business-rules").post(buisnessRules.addBuisnessRules);
 

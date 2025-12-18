@@ -24,7 +24,6 @@ exports.addDataModel = async (req, res) => {
 			created_by_id,
 			updated_by_id || null,
 		]);
-		console.log(result);
 		res.status(201).json({
 			success: "success",
 			data: result.rows[0],
@@ -46,7 +45,6 @@ exports.getDataModels = async (req, res) => {
 			message: "Success",
 			data: result.rows,
 		});
-		console.log(result.rows);
 	} catch (error) {
 		console.log("Error Fetching: " + error);
 		res.status(500).json({
@@ -60,7 +58,6 @@ exports.getDataModels = async (req, res) => {
 
 exports.deleteDataModel = async (req, res) => {
 	const { id } = req.params;
-	console.log(id);
 	const updated_by_id = userID;
 	deleteQuery =
 		"UPDATE data_model SET is_deleted=TRUE, updated_at = NOW(), updated_by_id=$1 WHERE uuid = $2 returning *";
@@ -93,7 +90,6 @@ exports.updateDataModel = async (req, res) => {
 			updated_by_id || null,
 			id,
 		]);
-		console.log("Update Successful");
 		res.status(200).json({
 			Message: "Update Successful",
 			data: results.rows[0],

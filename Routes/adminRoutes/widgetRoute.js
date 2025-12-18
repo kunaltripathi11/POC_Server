@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-const widgetController = require("../Controllers/widgetsController");
+const widgetController = require("../../Controllers/widgetsController");
 
 router.route("/").get(widgetController.getWidget);
 
