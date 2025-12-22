@@ -46,7 +46,7 @@ exports.createUser = async (req, res) => {
 		const newUser = await pool.query(
 			`INSERT INTO users (username, email, name, password, role)
 		   VALUES ($1, $2, $3, $4, $5)
-		   RETURNING id, username, email, role`,
+		   RETURNING id,uuid, username, email, role`,
 			[username, email, name, hashedPassword, role || "user"]
 		);
 
@@ -118,11 +118,11 @@ exports.logoutUser = (req, res) => {
 
 exports.changePassword = async (req, res) => {
 	try {
-		const { password, newPassword } = req.body;
+		const { oldPassword, newPassword } = req.body;
 
 		const userId = req.user.id;
 
-		if (!password || !newPassword) {
+		if (!oldPassword || !newPassword) {
 			return res.status(400).json({
 				message: "Old password and new password are required",
 			});
@@ -151,15 +151,15 @@ exports.changePassword = async (req, res) => {
 				});
 			}
 		}
-		const oldPassword = result.rows[0].password;
-		const isMatch = await bcrypt.compare(password, oldPassword);
+		const currPassword = result.rows[0].password;
+		const isMatch = await bcrypt.compare(oldPassword, currPassword);
 		if (!isMatch) {
 			return res
 				.status(401)
 				.json({ message: "Old password is incorrect" });
 		}
 
-		const isSameAsOld = await bcrypt.compare(newPassword, oldPassword);
+		const isSameAsOld = await bcrypt.compare(newPassword, currPassword);
 		if (isSameAsOld) {
 			return res.status(400).json({
 				message: "New password must be different from old password",
@@ -239,7 +239,7 @@ exports.forgotPassword = async (req, res) => {
 			[resetToken, expiry, email]
 		);
 
-		const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetToken}`;
+		const resetLink = `To change your password chick here ${process.env.FRONTEND_URL}/reset_password?token=${resetToken}`;
 
 		await transporter.sendMail({
 			from: process.env.EMAIL_USER,
@@ -259,9 +259,7 @@ exports.forgotPassword = async (req, res) => {
 
 exports.resetPassword = async (req, res) => {
 	try {
-		const { newPassword } = req.body;
-		const token = req.query.token;
-
+		const { newPassword, token } = req.body;
 		if (!token || !newPassword) {
 			return res.status(400).json({
 				message: "Token and new password are required",
@@ -275,13 +273,16 @@ exports.resetPassword = async (req, res) => {
 		}
 
 		const result = await pool.query(
-			`SELECT uuid, password FROM users WHERE reset_token = $1 AND reset_token_expiry > NOW()`,
+			`SELECT uuid, password,reset_token_expiry FROM users WHERE reset_token = $1 `,
 			[token]
 		);
-
 		if (result.rows.length === 0) {
 			return res.status(400).json({
-				message: "Invalid or expired reset token",
+				message: "Invalid reset token",
+			});
+		} else if (new Date(result.rows[0].reset_token_expiry) < new Date()) {
+			return res.status(400).json({
+				message: "Expired reset token, Please regenrate the reset link",
 			});
 		}
 

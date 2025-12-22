@@ -1,6 +1,5 @@
 const pool = require("../db");
 
-let userID = "c0f715b5-9800-41a5-80df-69e73767765b";
 exports.addBuisnessRules = async (req, res) => {
 	let {
 		name,
@@ -24,9 +23,10 @@ exports.addBuisnessRules = async (req, res) => {
 		}
 	}
 	const addQuery =
-		"INSERT INTO business_rules (name,description,reserved_rules,data_model_id,app_package,workflow,user_specific_field_id,multiple_user_specific_field_id,link_to,destination_id, created_by_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) returning *";
+		"INSERT INTO business_rules (name,description,reserved_rules,data_model_id,app_package,workflow,user_specific_field_id,multiple_user_specific_field_id,link_to,destination_id, created_by_id,updated_by_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) returning *";
 
-	const created_by_id = userID;
+	const created_by_id = req.user.id;
+	const updated_by_id = req.user.id;
 	try {
 		const result = await pool.query(addQuery, [
 			name,
@@ -40,6 +40,7 @@ exports.addBuisnessRules = async (req, res) => {
 			link_to || null,
 			destination_id || null,
 			created_by_id,
+			updated_by_id,
 		]);
 
 		res.status(200).json({
@@ -72,7 +73,7 @@ exports.getBusinessRules = async (req, res) => {
 exports.archiveBusinessRules = async (req, res) => {
 	const archiveRuleQuery =
 		"Update business_rules SET is_deleted=TRUE, updated_at=NOW(), updated_by_id=$1  WHERE uuid=$2";
-	let updated_by_id = userID;
+	let updated_by_id = req.user.id;
 
 	try {
 		const result = await pool.query(archiveRuleQuery, [
@@ -170,7 +171,7 @@ exports.updateBusinessRule = async (req, res) => {
 	const updateRuleQuery =
 		"UPDATE business_rules SET name = $1,description = $2,reserved_rules = $3,data_model_id=$4,app_package=$5,workflow=$6,user_specific_field_id=$7,multiple_user_specific_field_id=$8,link_to=$9,destination_id=$10, updated_at=NOW(), updated_by_id=$11 WHERE uuid=$12 returning *";
 
-	const updated_by_id = userID;
+	const updated_by_id = req.user.id;
 	try {
 		const result = await pool.query(updateRuleQuery, [
 			name,
@@ -198,10 +199,13 @@ exports.updateBusinessRule = async (req, res) => {
 };
 exports.activateRule = async (req, res) => {
 	const updateRuleQuery =
-		"UPDATE business_rules SET is_deleted=false WHERE uuid=$1 returning *";
-
+		"UPDATE business_rules SET is_deleted=false, updated_at = NOW(), updated_by_id = $1 WHERE uuid=$2 returning *";
+	const updated_by_id = req.user.id;
 	try {
-		const result = await pool.query(updateRuleQuery, [req.params.id]);
+		const result = await pool.query(updateRuleQuery, [
+			updated_by_id,
+			req.params.id,
+		]);
 
 		res.status(200).json({
 			success: true,

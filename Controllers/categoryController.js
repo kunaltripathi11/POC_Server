@@ -1,13 +1,12 @@
 const pool = require("../db");
-let userID = "c0f715b5-9800-41a5-80df-69e73767765b";
 
 exports.addCategory = async (req, res) => {
 	const { category_name, display_order, sol_category_id } = req.body;
 
 	const addCatQuery =
 		"INSERT INTO category (category_name,display_order,sol_category_id,created_by_id,updated_by_id) VALUES ($1,$2,$3,$4,$5) returning *";
-	const created_by_id = userID;
-	const updated_by_id = userID;
+	const created_by_id = req.user.id;
+	const updated_by_id = req.user.id;
 
 	try {
 		const result = await pool.query(addCatQuery, [
@@ -32,7 +31,7 @@ exports.updateCategory = async (req, res) => {
 	const addCatQuery =
 		"UPDATE category SET category_name=$1,display_order=$2,sol_category_id=$3,updated_by_id=$4, updated_at=NOW() WHERE uuid=$5 returning *";
 
-	const updated_by_id = userID;
+	const updated_by_id = req.user.id;
 	try {
 		const result = await pool.query(addCatQuery, [
 			category_name,
@@ -54,7 +53,7 @@ exports.updateCategory = async (req, res) => {
 
 exports.getCategory = async (req, res) => {
 	const getCategory =
-		"SELECT c.*, s.title from solution_category s right join category c on c.sol_category_id=s.id WHERE c.is_deleted=FALSE ORDER BY c.display_order,c.category_name";
+		"SELECT c.*, s.title from solution_category s right join category c on c.sol_category_id=s.id AND s.is_deleted=false WHERE c.is_deleted=FALSE ORDER BY c.display_order,c.category_name";
 
 	try {
 		const result = await pool.query(getCategory);
@@ -70,7 +69,7 @@ exports.getCategory = async (req, res) => {
 exports.deleteCategory = async (req, res) => {
 	const deleteCategory =
 		"UPDATE category SET is_deleted=TRUE, updated_at=NOW(), updated_by_id=$1 WHERE uuid=$2";
-	const updated_by_id = userID;
+	const updated_by_id = req.user.id;
 	try {
 		const result = await pool.query(deleteCategory, [
 			updated_by_id,

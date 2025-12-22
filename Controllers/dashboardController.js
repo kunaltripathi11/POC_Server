@@ -1,5 +1,4 @@
 const pool = require("../db");
-let userID = "c0f715b5-9800-41a5-80df-69e73767765b";
 
 const addAppQuery =
 	"INSERT INTO application ( title,display_order, app_package,icon,created_by_id, updated_by_id ) VALUES($1,$2,$3,$4,$5,$6) RETURNING id,app_package ";
@@ -17,8 +16,8 @@ exports.addDashboard = async (req, res) => {
 		display_order,
 	} = req.body;
 
-	const created_by_id = userID;
-	const updated_by_id = userID;
+	const created_by_id = req.user.id;
+	const updated_by_id = req.user.id;
 	const checkUnique = await pool.query(
 		"SELECT * FROM dashboard WHERE name=$1 or url=$2 ",
 		[name, url]
@@ -85,8 +84,8 @@ exports.updateDashboard = async (req, res) => {
 		display_order,
 	} = req.body;
 
-	const created_by_id = userID;
-	const updated_by_id = userID;
+	const created_by_id = req.user.id;
+	const updated_by_id = req.user.id;
 	const checkuUnique = await pool.query(
 		"SELECT * FROM dashboard WHERE name=$1 or url=$2 ",
 		[name, url]
@@ -175,7 +174,7 @@ exports.getDashboardById = async (req, res) => {
 exports.deleteDashboard = async (req, res) => {
 	const deleteDashboard =
 		"UPDATE dashboard SET is_deleted=TRUE, updated_at=NOW(), updated_by_id=$1 WHERE uuid=$2 and is_deleted=false RETURNING * ";
-	const updated_by_id = userID;
+	const updated_by_id = req.user.id;
 	try {
 		const result = await pool.query(deleteDashboard, [
 			updated_by_id,

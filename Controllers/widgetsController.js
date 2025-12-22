@@ -1,13 +1,12 @@
 const pool = require("../db");
-let userID = "c0f715b5-9800-41a5-80df-69e73767765b";
 
 exports.addWidget = async (req, res) => {
 	const { dashboard_id, widget_type } = req.body;
 
 	const addWidgetQuery =
 		"INSERT INTO widget (dashboard_id,widget_type,created_by_id,updated_by_id) VALUES ($1,$2,$3,$4) RETURNING *";
-	const created_by_id = userID;
-	const updated_by_id = userID;
+	const created_by_id = req.user.id;
+	const updated_by_id = req.user.id;
 
 	try {
 		const result = await pool.query(addWidgetQuery, [
@@ -49,7 +48,7 @@ exports.updateWidget = async (req, res) => {
 	const addCatQuery =
 		"UPDATE widget SET name=$1,dashboard_id=$2,business_rule_id=$3,data_model_id=$4,updated_by_id=$5, updated_at=NOW() WHERE uuid=$6 and is_deleted=false returning *";
 
-	const updated_by_id = userID;
+	const updated_by_id = req.user.id;
 	try {
 		const result = await pool.query(addCatQuery, [
 			name || "New Widget",

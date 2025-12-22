@@ -10,4 +10,6 @@ router.route("/").get(data_model.getDataModels);
 router.route("/:id").put(data_model.updateDataModel);
 router.route("/:id").delete(data_model.deleteDataModel);
 
+router.route("/:id/rules").get(data_model.getRulesByModelId);
+
 module.exports = router;

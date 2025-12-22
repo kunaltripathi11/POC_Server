@@ -1,12 +1,11 @@
 const pool = require("../db");
-let userID = "c0f715b5-9800-41a5-80df-69e73767765b";
 
 exports.addSolCategory = async (req, res) => {
 	const { title } = req.body;
 	const addSolCatQuery =
 		"INSERT INTO solution_category (title,created_by_id,updated_by_id) VALUES ($1,$2,$3) RETURNING *";
-	const created_by_id = userID;
-	const updated_by_id = userID;
+	const created_by_id = req.user.id;
+	const updated_by_id = req.user.id;
 	try {
 		const result = await pool.query(addSolCatQuery, [
 			title,
@@ -29,7 +28,7 @@ exports.updateSolCategory = async (req, res) => {
 	const addSolCatQuery =
 		"UPDATE solution_category SET title=$1,updated_by_id=$2, updated_at=NOW() WHERE uuid=$3 returning *";
 
-	const updated_by_id = userID;
+	const updated_by_id = req.user.id;
 	try {
 		const result = await pool.query(addSolCatQuery, [
 			title,
@@ -65,7 +64,7 @@ exports.getSolCategory = async (req, res) => {
 exports.deleteSolCategory = async (req, res) => {
 	const deleteSolCategory =
 		"UPDATE solution_category SET is_deleted=TRUE, updated_at=NOW(), updated_by_id=$1 WHERE uuid=$2";
-	const updated_by_id = userID;
+	const updated_by_id = req.user.id;
 	try {
 		const result = await pool.query(deleteSolCategory, [
 			updated_by_id,
