@@ -1,6 +1,6 @@
 const pool = require("../db");
 
-exports.addBuisnessRules = async (req, res) => {
+exports.addbusinessRules = async (req, res) => {
 	let {
 		name,
 		description,
@@ -45,7 +45,7 @@ exports.addBuisnessRules = async (req, res) => {
 
 		res.status(200).json({
 			data: result.rows[0],
-			Message: "Buisness rule sucessfully created",
+			Message: "business rule sucessfully created",
 		});
 	} catch (error) {
 		console.log(error);
@@ -190,7 +190,7 @@ exports.updateBusinessRule = async (req, res) => {
 
 		res.status(200).json({
 			data: result.rows[0],
-			Message: "Buisness rule sucessfully updated",
+			Message: "business rule sucessfully updated",
 		});
 	} catch (error) {
 		console.log(error);
@@ -210,7 +210,7 @@ exports.activateRule = async (req, res) => {
 		res.status(200).json({
 			success: true,
 			data: result.rows[0],
-			Message: "Buisness rule activated ",
+			Message: "business rule activated ",
 		});
 	} catch (error) {
 		console.log(error);
