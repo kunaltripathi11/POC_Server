@@ -16,6 +16,11 @@ exports.addWidget = async (req, res) => {
 			updated_by_id,
 		]);
 
+		await pool.query(
+			"UPDATE dashboard SET updated_by_id=$1, updated_at=NOW() WHERE id=$2",
+			[updated_by_id, dashboard_id]
+		);
+
 		res.status(200).json({
 			Message: "Widget Inserted sucessfully",
 			data: result.rows[0],
@@ -29,7 +34,7 @@ exports.getModelByRule = async (req, res) => {
 	const { business_rule_id } = req.body;
 
 	const getDataModelId =
-		"SELECT b.uuid as rule_uuid,d.uuid as model_uuid,d.name,b.data_model_id FROM  business_rules b join data_model d on d.id=b.data_model_id WHERE b.id=$1";
+		"SELECT b.uuid as rule_uuid,d.uuid as model_uuid,d.name,b.data_model_id FROM  business_rules b join data_model d on d.id=b.data_model_id WHERE b.id=$1 ";
 	try {
 		const response = await pool.query(getDataModelId, [business_rule_id]);
 
@@ -128,8 +133,17 @@ exports.getWidget = async (req, res) => {
 
 exports.deleteWidget = async (req, res) => {
 	const deleteWidget = "DELETE FROM widget WHERE uuid=$1";
+
+	const updated_by_id = req.user.id;
+	const { uuid } = req.body;
+
 	try {
 		const result = await pool.query(deleteWidget, [req.params.id]);
+
+		await pool.query(
+			"UPDATE dashboard SET updated_by_id=$1, updated_at=NOW() WHERE uuid=$2",
+			[updated_by_id, uuid]
+		);
 		res.status(200).json({
 			Message: "Deleted Successfully",
 		});

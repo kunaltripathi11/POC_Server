@@ -41,7 +41,7 @@ exports.addApplication = async (req, res) => {
 
 exports.getApplication = async (req, res) => {
 	const getAppQuery =
-		"Select a.*, c.category_name,d.url,d.uuid as dashboard_uuid,s.title as solution_title FROM solution_category s right join category c on s.id=c.sol_category_id AND s.is_deleted=False  RIGHT JOIN application a  ON a.category_id=c.id AND c.is_deleted=FALSE LEFT JOIN dashboard d ON d.app_id=a.id WHERE a.is_deleted=FALSE ORDER BY a.display_order,a.title";
+		"Select a.*, c.category_name,d.url,d.uuid as dashboard_uuid,s.title as solution_title,uc.name AS created_by_name, uu.name AS updated_by_name FROM solution_category s right join category c on s.id=c.sol_category_id AND s.is_deleted=False  RIGHT JOIN application a  ON a.category_id=c.id AND c.is_deleted=FALSE LEFT JOIN dashboard d ON d.app_id=a.id LEFT JOIN users uc ON uc.uuid = a.created_by_id LEFT JOIN users uu ON uu.uuid = a.updated_by_id WHERE a.is_deleted=FALSE ORDER BY a.display_order,a.title";
 	try {
 		const result = await pool.query(getAppQuery);
 		res.status(200).json({
@@ -50,7 +50,7 @@ exports.getApplication = async (req, res) => {
 		});
 	} catch (error) {
 		console.log(error);
-		res.status(500).json("Error Fetching");
+		res.status(500).json({ Message: "Error Fetching" });
 	}
 };
 

@@ -23,7 +23,7 @@ exports.addBuisnessRules = async (req, res) => {
 		}
 	}
 	const addQuery =
-		"INSERT INTO business_rules (name,description,reserved_rules,data_model_id,app_package,workflow,user_specific_field_id,multiple_user_specific_field_id,link_to,destination_id, created_by_id,updated_by_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) returning *";
+		"INSERT INTO business_rules (name,description,reserved_rules,data_model_id,app_package,workflow,user_specific_field_id,multiple_user_specific_field_id,link_to,destination_id, created_by_id,updated_by_id) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) returning *";
 
 	const created_by_id = req.user.id;
 	const updated_by_id = req.user.id;
@@ -104,7 +104,7 @@ exports.deleteBusinessRule = async (req, res) => {
 
 exports.getDeletedBusinessRules = async (req, res) => {
 	const getRulesQuery =
-		"select  br.uuid,br.name, br.description, STRING_AGG(t.tag, ', ') as tags from business_rules br left join tag_rules tr on tr.rule_id = br.id left join tags t on t.id = tr.tag_id where br.is_deleted=true group by br.id, br.name  ";
+		"select  br.uuid,br.name, br.description, STRING_AGG(t.tag, ', ') as tags from business_rules br left join tag_rules tr on tr.rule_id = br.id left join tags t on t.id = tr.tag_id  where br.is_deleted=true group by br.id, br.name  ";
 
 	try {
 		const result = await pool.query(getRulesQuery);
@@ -122,7 +122,7 @@ exports.getDeletedBusinessRules = async (req, res) => {
 
 exports.getBusinessRulesById = async (req, res) => {
 	const getQueryFromDataModel =
-		"select d1.query,b1.* from data_model d1 right join business_rules b1 on (d1.id=b1.data_model_id) where b1.uuid=$1;";
+		"select d1.query,b1.* from data_model d1 right join business_rules b1 on (d1.id=b1.data_model_id)  where d1.is_deleted=false AND b1.uuid=$1;";
 	try {
 		const queryModel = await pool.query(getQueryFromDataModel, [
 			req.params.id,

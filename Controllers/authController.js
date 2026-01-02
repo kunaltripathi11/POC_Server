@@ -92,9 +92,8 @@ exports.loginUser = async (req, res) => {
 		);
 		res.cookie("token", token, {
 			httpOnly: true,
-
 			sameSite: "lax",
-			maxAge: 24 * 60 * 60 * 1000,
+			maxAge: Number(process.env.LOGIN_MAX_AGE),
 			secure: false,
 		});
 		res.json({
@@ -108,6 +107,7 @@ exports.loginUser = async (req, res) => {
 		});
 	} catch (error) {
 		res.status(500).json({ message: "Server error" });
+		console.log(error);
 	}
 };
 

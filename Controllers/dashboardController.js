@@ -32,7 +32,6 @@ exports.addDashboard = async (req, res) => {
 
 	const addDashboardQuery =
 		"INSERT INTO dashboard (name,title,app_id,url,remove_filter,app_package, created_by_id, updated_by_id) VALUES($1, $2, $3, $4, $5,$6,$7,$8) RETURNING *";
-	console.log("Create App", create_app);
 	try {
 		if (create_app == true) {
 			const result = await pool.query(addAppQuery, [
@@ -99,7 +98,7 @@ exports.updateDashboard = async (req, res) => {
 	}
 
 	const updateDashboardQuery =
-		"UPDATE dashboard SET name=$1,title=$2,app_id=$3,url=$4,remove_filter=$5,app_package=$6, created_by_id=$7, updated_by_id=$8 WHERE uuid=$9 and is_deleted =FALSE RETURNING *";
+		"UPDATE dashboard SET name=$1,title=$2,app_id=$3,url=$4,remove_filter=$5,app_package=$6,updated_by_id=$7 WHERE uuid=$8 and is_deleted =FALSE RETURNING *";
 
 	try {
 		if (createApp == true) {
@@ -115,7 +114,7 @@ exports.updateDashboard = async (req, res) => {
 			app_package = result.rows[0].app_package;
 			app_id = result.rows[0].id;
 		}
-
+		console.log("UPDATED", updated_by_id);
 		const result = await pool.query(updateDashboardQuery, [
 			name,
 			title,
@@ -123,7 +122,6 @@ exports.updateDashboard = async (req, res) => {
 			url,
 			remove_filter || false,
 			app_package,
-			created_by_id,
 			updated_by_id,
 			req.params.id,
 		]);
@@ -142,7 +140,7 @@ exports.updateDashboard = async (req, res) => {
 
 exports.getDashboard = async (req, res) => {
 	const getDashboard =
-		"SELECT d.*, a.title as Application from dashboard d join application a  on d.app_id=a.id WHERE d.is_deleted=FALSE";
+		"SELECT d.*, a.title as Application, uc.name AS created_by_name,uu.name AS updated_by_name from dashboard d join application a on d.app_id=a.id LEFT JOIN users uc ON uc.uuid = d.created_by_id LEFT JOIN users uu ON uu.uuid = d.updated_by_id WHERE d.is_deleted=FALSE";
 
 	try {
 		const result = await pool.query(getDashboard);
@@ -158,7 +156,7 @@ exports.getDashboard = async (req, res) => {
 
 exports.getDashboardById = async (req, res) => {
 	const getDashboard =
-		"SELECT d.*, a.title as Application   from dashboard d join application a on d.app_id=a.id WHERE d.uuid=$1 and d.is_deleted=FALSE";
+		"SELECT d.*, a.title as Application ,uc.name AS created_by_name,uu.name AS updated_by_name   from dashboard d join application a on d.app_id=a.id LEFT JOIN users uc ON uc.uuid = d.created_by_id LEFT JOIN users uu ON uu.uuid = d.updated_by_id WHERE d.uuid=$1 and d.is_deleted=FALSE";
 
 	try {
 		const result = await pool.query(getDashboard, [req.params.id]);
@@ -192,7 +190,7 @@ exports.deleteDashboard = async (req, res) => {
 
 exports.fetchApplicationWithNoDashboard = async (req, res) => {
 	const fetchQuery =
-		"SELECT a.* FROM application a LEFT JOIN dashboard d ON a.id=d.app_id  WHERE d.app_id IS NULL ";
+		"SELECT a.* FROM application a LEFT JOIN dashboard d ON a.id=d.app_id  WHERE d.app_id IS NULL AND a.is_deleted=false ";
 	try {
 		const result = await pool.query(fetchQuery);
 		res.status(200).json({

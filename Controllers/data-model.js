@@ -32,7 +32,8 @@ exports.addDataModel = async (req, res) => {
 //Get data model
 
 exports.getDataModels = async (req, res) => {
-	const getQuery = "SELECT * FROM data_model WHERE is_deleted=FALSE";
+	const getQuery =
+		"SELECT d.*, uc.name AS created_by_name,uu.name AS updated_by_name FROM data_model d LEFT JOIN users uc ON uc.uuid = d.created_by_id LEFT JOIN users uu ON uu.uuid = d.updated_by_id WHERE is_deleted=FALSE";
 	try {
 		const result = await pool.query(getQuery);
 		res.status(200).json({
